@@ -255,8 +255,9 @@ table.roster{
 
 table.roster thead th{
   position: sticky;
-  top: 89px;
-  background: var(--bg);
+  top: var(--topbar-h, 98px);
+  background: var(--bg) !important;
+  box-shadow: 0 1px 0 var(--line);
   text-align: left;
   font-family: var(--font-mono);
   font-size: 11px;
