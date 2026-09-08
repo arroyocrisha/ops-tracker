@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ops Tracker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-row">
+    <div class="brand">
+      <span class="brand-mark"></span>
+      <h1>Ops Tracker<small>client &amp; team roster</small></h1>
+    </div>
+    <div class="topbar-actions">
+      <span class="count-pill" id="countPill">— clients</span>
+      <span class="sync-state" id="syncState"><span class="sync-dot"></span><span id="syncLabel">Not connected</span></span>
+      <button class="btn btn-ghost" id="connectBtn">Connect GitHub</button>
+      <button class="btn btn-primary" id="addBtn">+ Add client</button>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="chip-group" id="statusChips">
+      <button class="chip active" data-status="__all">All</button>
+      <button class="chip" data-status="Active">Active</button>
+      <button class="chip" data-status="Contract Ending">Ending</button>
+      <button class="chip" data-status="Paused">Paused</button>
+    </div>
+    <select class="role-filter" id="roleFilter">
+      <option value="">Assigned to: anyone</option>
+    </select>
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="Search clients, industry…">
+    </div>
+  </div>
+</div>
+
+<div class="table-scroll">
+  <table class="roster">
+    <thead>
+      <tr>
+        <th class="col-client" data-sort="name">Client</th>
+        <th data-sort="cho">CHO</th>
+        <th data-sort="crsm">CRSM</th>
+        <th data-sort="csm">CSM</th>
+        <th data-sort="ccm">CCM</th>
+        <th data-sort="wpo">WPO</th>
+        <th data-sort="des">DES</th>
+        <th data-sort="packages">Package</th>
+        <th data-sort="status">Status</th>
+        <th data-sort="contractEnd">Ends</th>
+      </tr>
+    </thead>
+    <tbody id="tbody">
+    </tbody>
+  </table>
+  <div class="empty-state" id="emptyState" style="display:none;">No clients match this filter.</div>
+</div>
+
+<!-- Edit drawer -->
+<div class="scrim" id="scrim"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="eyebrow" id="drawerEyebrow">Editing client</div>
+    <input type="text" class="name-input" id="f_name" placeholder="Client name">
+  </div>
+  <div class="drawer-body">
+
+    <div class="field-group">
+      <span class="fg-label">Team assignments</span>
+      <div class="role-grid">
+        <div><label class="role-label" for="f_cho">CHO</label><input type="text" id="f_cho"></div>
+        <div><label class="role-label" for="f_crsm">CRSM</label><input type="text" id="f_crsm"></div>
+        <div><label class="role-label" for="f_csm">CSM</label><input type="text" id="f_csm"></div>
+        <div><label class="role-label" for="f_ccm">CCM</label><input type="text" id="f_ccm"></div>
+        <div><label class="role-label" for="f_wpo">WPO</label><input type="text" id="f_wpo"></div>
+        <div><label class="role-label" for="f_des">DES</label><input type="text" id="f_des"></div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <span class="fg-label">Status</span>
+      <select id="f_status">
+        <option>Active</option>
+        <option>Contract Ending</option>
+        <option>Paused</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <span class="fg-label">Contract dates</span>
+      <div class="two-col">
+        <div><label class="role-label" for="f_start">Start</label><input type="date" id="f_start"></div>
+        <div><label class="role-label" for="f_end">End</label><input type="date" id="f_end"></div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <span class="fg-label">Industry</span>
+      <input type="text" id="f_industry">
+    </div>
+
+    <div class="field-group">
+      <span class="fg-label">Package/s</span>
+      <input type="text" id="f_packages">
+    </div>
+
+    <div class="two-col">
+      <div class="field-group">
+        <span class="fg-label">Hosted with us?</span>
+        <select id="f_hosted">
+          <option value="">—</option>
+          <option>Hosted</option>
+          <option>Not Hosted</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <span class="fg-label">Closed / win date</span>
+        <input type="date" id="f_closed">
+      </div>
+    </div>
+
+  </div>
+  <div class="drawer-foot">
+    <button class="btn btn-ghost btn-danger" id="deleteBtn">Delete</button>
+    <div class="right">
+      <button class="btn btn-ghost" id="cancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="saveBtn">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- GitHub connect modal -->
+<div class="modal-scrim hidden" id="tokenModal">
+  <div class="modal">
+    <h2>Connect to GitHub</h2>
+    <p>
+      Ops Tracker reads and writes <code>data.json</code> directly in your GitHub repo, so
+      changes save for everyone. Paste a fine-grained personal access token with
+      <strong>Contents: Read and write</strong> access to this repository.
+      <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create one →</a>
+    </p>
+    <input type="text" id="ownerInput" placeholder="GitHub username or org (e.g. acme-agency)">
+    <input type="text" id="repoInput" placeholder="Repository name (e.g. ops-tracker)">
+    <input type="password" id="tokenInput" placeholder="ghp_ / github_pat_ token">
+    <div class="err-msg" id="tokenErr">Couldn't verify that repo and token. Check the details and try again.</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="tokenCancel">Cancel</button>
+      <button class="btn btn-primary" id="tokenSave">Connect</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
