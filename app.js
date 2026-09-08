@@ -26,7 +26,21 @@ document.addEventListener('DOMContentLoaded', () => {
   wireStaticEvents();
   refreshSyncBadge();
   fetchData();
+  measureTopbar();
+  window.addEventListener('resize', measureTopbar);
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(measureTopbar);
+  }
 });
+
+function measureTopbar() {
+  const bar = document.querySelector('.topbar');
+  if (!bar) return;
+  // run twice: once now, once after layout settles (fonts/filters wrap)
+  const set = () => document.documentElement.style.setProperty('--topbar-h', bar.getBoundingClientRect().height + 'px');
+  set();
+  requestAnimationFrame(set);
+}
 
 function loadConfig() {
   try {
